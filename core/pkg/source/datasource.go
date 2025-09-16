@@ -6,6 +6,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/opencost/opencost/core/pkg/clusters"
 	"github.com/opencost/opencost/core/pkg/diagnostics"
+	"github.com/opencost/opencost/core/pkg/util"
 )
 
 type MetricsQuerier interface {
@@ -117,7 +118,12 @@ type MetricsQuerier interface {
 
 	// Data Coverage Query
 	QueryDataCoverage(limitDays int) (time.Time, time.Time, error)
+
+	QueryRAMUsage(start, end time.Time) (*Future[ContainerMetricsResult], error)
+	QueryCPUUsage(start, end time.Time) (*Future[ContainerMetricsResult], error)
 }
+
+type ContainerMetricsResult map[string][]*util.Vector
 
 type OpenCostDataSource interface {
 	// RegisterEndPoints registers any custom endpoints that can be used for diagnostics or debug purposes.

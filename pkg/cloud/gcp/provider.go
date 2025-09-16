@@ -17,6 +17,7 @@ import (
 	coreenv "github.com/opencost/opencost/core/pkg/env"
 	"github.com/opencost/opencost/pkg/cloud/aws"
 	"github.com/opencost/opencost/pkg/cloud/models"
+	"github.com/opencost/opencost/pkg/cloud/multicloud"
 	"github.com/opencost/opencost/pkg/cloud/utils"
 
 	"github.com/opencost/opencost/core/pkg/clustercache"
@@ -1684,4 +1685,8 @@ func getUsageType(labels map[string]string) string {
 // everything that was _available_ in the pricing source.
 func (gcp *GCP) PricingSourceSummary() interface{} {
 	return gcp.Pricing
+}
+
+func (gcp *GCP) CloudCost() (*multicloud.CloudCost, error) {
+	return nil, nil
 }
