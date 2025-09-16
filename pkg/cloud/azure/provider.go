@@ -30,6 +30,7 @@ import (
 	"github.com/opencost/opencost/core/pkg/util/json"
 	"github.com/opencost/opencost/core/pkg/util/timeutil"
 	"github.com/opencost/opencost/pkg/cloud/models"
+	"github.com/opencost/opencost/pkg/cloud/multicloud"
 	"github.com/opencost/opencost/pkg/cloud/utils"
 	"github.com/opencost/opencost/pkg/env"
 )
@@ -1712,4 +1713,8 @@ func ParseAzureSubscriptionID(id string) string {
 	}
 	// Return empty string if an account could not be parsed from provided string
 	return ""
+}
+
+func (az *Azure) CloudCost() (*multicloud.CloudCost, error) {
+	return nil, nil
 }

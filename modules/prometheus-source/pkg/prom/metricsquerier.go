@@ -587,6 +587,25 @@ func (pds *PrometheusMetricsQuerier) QueryRAMRequests(start, end time.Time) *sou
 	return source.NewFuture(source.DecodeRAMRequestsResult, ctx.QueryAtTime(queryRAMRequests, end))
 }
 
+func (pds *PrometheusMetricsQuerier) QueryRAMUsage(start, end time.Time) (*source.Future[source.ContainerMetricsResult], error) {
+	const queryName = "QueryRAMUsage"
+	const queryFmtRAMUsage = `avg(avg_over_time(container_memory_working_set_bytes{container!="", container_name!="POD", container!="POD", %s}[%s])) by (container_name, container, pod_name, pod, namespace, node, instance, %s)`
+
+	cfg := pds.promConfig
+
+	durStr := timeutil.DurationString(end.Sub(start))
+	if durStr == "" {
+		return nil, fmt.Errorf("failed to parse duration string passed to %s", queryName)
+	}
+
+	queryRAMUsage := fmt.Sprintf(queryFmtRAMUsage, cfg.ClusterFilter, durStr, cfg.ClusterLabel)
+	log.Debugf(PrometheusMetricsQueryLogFormat, queryName, end.Unix(), queryRAMUsage)
+
+	ctx := pds.promContexts.NewNamedContext(AllocationContextName)
+	future := source.NewFuture(pds.decodeContainerMetricsResult, ctx.QueryAtTime(queryRAMUsage, end))
+	return future, nil
+}
+
 func (pds *PrometheusMetricsQuerier) QueryRAMUsageAvg(start, end time.Time) *source.Future[source.RAMUsageAvgResult] {
 	const queryName = "QueryRAMUsageAvg"
 	const queryFmtRAMUsageAvg = `avg(avg_over_time(container_memory_working_set_bytes{container!="", container_name!="POD", container!="POD", %s}[%s])) by (container_name, container, pod_name, pod, namespace, node, instance, %s)`
@@ -657,6 +676,25 @@ func (pds *PrometheusMetricsQuerier) QueryCPURequests(start, end time.Time) *sou
 
 	ctx := pds.promContexts.NewNamedContext(AllocationContextName)
 	return source.NewFuture(source.DecodeCPURequestsResult, ctx.QueryAtTime(queryCPURequests, end))
+}
+
+func (pds *PrometheusMetricsQuerier) QueryCPUUsage(start, end time.Time) (*source.Future[source.ContainerMetricsResult], error) {
+	const queryName = "QueryCPUUsage"
+	const queryFmtCPUUsage = `avg(rate(container_cpu_usage_seconds_total{container!="", container_name!="POD", container!="POD", %s}[%s])) by (container_name, container, pod_name, pod, namespace, node, instance, %s)`
+
+	cfg := pds.promConfig
+
+	durStr := timeutil.DurationString(end.Sub(start))
+	if durStr == "" {
+		return nil, fmt.Errorf("failed to parse duration string passed to %s", queryName)
+	}
+
+	queryCPUUsage := fmt.Sprintf(queryFmtCPUUsage, cfg.ClusterFilter, durStr, cfg.ClusterLabel)
+	log.Debugf(PrometheusMetricsQueryLogFormat, queryName, end.Unix(), queryCPUUsage)
+
+	ctx := pds.promContexts.NewNamedContext(AllocationContextName)
+	future := source.NewFuture(pds.decodeContainerMetricsResult, ctx.QueryAtTime(queryCPUUsage, end))
+	return future, nil
 }
 
 func (pds *PrometheusMetricsQuerier) QueryCPUUsageAvg(start, end time.Time) *source.Future[source.CPUUsageAvgResult] {

@@ -146,6 +146,14 @@ func (cm *CostModel) ComputeCostData(start, end time.Time) (map[string]*CostData
 	resChNetZoneRequests := source.WithGroup(grp, mq.QueryNetZoneGiB(start, end))
 	resChNetRegionRequests := source.WithGroup(grp, mq.QueryNetRegionGiB(start, end))
 	resChNetInternetRequests := source.WithGroup(grp, mq.QueryNetInternetGiB(start, end))
+	resChRAMUsage, err := mq.QueryRAMUsage(start, end)
+	if err != nil {
+		return nil, err
+	}
+	resChCPUUsage, err := mq.QueryCPUUsage(start, end)
+	if err != nil {
+		return nil, err
+	}
 
 	// Pull pod information from k8s API
 	podlist := cm.Cache.GetAllPods()
@@ -171,14 +179,8 @@ func (cm *CostModel) ComputeCostData(start, end time.Time) (map[string]*CostData
 	}
 
 	// Process Prometheus query results. Handle errors using ctx.Errors.
-	resRAMUsage, err := resChRAMUsage.Await()
-	if err != nil {
-		log.Warnf("Failed to query RAM usage: %s", err)
-	}
-	resCPUUsage, err := resChCPUUsage.Await()
-	if err != nil {
-		log.Warnf("Failed to query CPU usage: %s", err)
-	}
+	resRAMUsage, _ := resChRAMUsage.Await()
+	resCPUUsage, _ := resChCPUUsage.Await()
 	resNetZoneRequests, _ := resChNetZoneRequests.Await()
 	resNetRegionRequests, _ := resChNetRegionRequests.Await()
 	resNetInternetRequests, _ := resChNetInternetRequests.Await()
@@ -236,11 +238,17 @@ func (cm *CostModel) ComputeCostData(start, end time.Time) (map[string]*CostData
 	containerNameCost := make(map[string]*CostData)
 	containers := make(map[string]bool)
 
-	RAMUsedMap := resRAMUsage
+	RAMUsedMap, err := GetContainerMetricVector(resRAMUsage, clusterID)
+	if err != nil {
+		return nil, err
+	}
 	for key := range RAMUsedMap {
 		containers[key] = true
 	}
-	CPUUsedMap := resCPUUsage
+	CPUUsedMap, err := GetContainerMetricVector(resCPUUsage, clusterID) // No need to normalize here, as this comes from a counter
+	if err != nil {
+		return nil, err
+	}
 	for key := range CPUUsedMap {
 		containers[key] = true
 	}

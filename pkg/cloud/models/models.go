@@ -11,6 +11,7 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/opencost/opencost/core/pkg/clustercache"
 	"github.com/opencost/opencost/core/pkg/log"
+	"github.com/opencost/opencost/pkg/cloud/multicloud"
 	"github.com/opencost/opencost/pkg/config"
 )
 
@@ -328,6 +329,7 @@ type Provider interface {
 	CombinedDiscountForNode(string, bool, float64, float64) float64
 	Regions() []string
 	PricingSourceSummary() interface{}
+	CloudCost() (*multicloud.CloudCost, error)
 }
 
 // ProviderConfig describes config storage common to all providers.

@@ -18,6 +18,7 @@ import (
 
 	"github.com/aws/smithy-go"
 	"github.com/opencost/opencost/pkg/cloud/models"
+	"github.com/opencost/opencost/pkg/cloud/multicloud"
 	"github.com/opencost/opencost/pkg/cloud/utils"
 
 	"github.com/opencost/opencost/core/pkg/clustercache"
@@ -2473,4 +2474,8 @@ func (aws *AWS) Regions() []string {
 func (aws *AWS) PricingSourceSummary() interface{} {
 	// encode the pricing source summary as a JSON string
 	return aws.Pricing
+}
+
+func (aws *AWS) CloudCost() (*multicloud.CloudCost, error) {
+	return nil, nil
 }

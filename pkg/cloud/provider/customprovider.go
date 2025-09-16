@@ -14,6 +14,7 @@ import (
 	"github.com/opencost/opencost/core/pkg/util"
 	"github.com/opencost/opencost/core/pkg/util/json"
 	"github.com/opencost/opencost/pkg/cloud/models"
+	"github.com/opencost/opencost/pkg/cloud/multicloud"
 	"github.com/opencost/opencost/pkg/cloud/utils"
 )
 
@@ -402,4 +403,8 @@ func (cp *CustomProvider) CombinedDiscountForNode(instanceType string, isPreempt
 
 func (cp *CustomProvider) Regions() []string {
 	return []string{}
+}
+
+func (cp *CustomProvider) CloudCost() (*multicloud.CloudCost, error) {
+	return nil, nil
 }
